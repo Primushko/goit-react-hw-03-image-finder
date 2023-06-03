@@ -1,116 +1,122 @@
 import { Component } from 'react';
-import css from './App.module.css';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import PostsApiService from 'services/PostApiService';
+
 import Searchbar from './Searchbar/Searchbar';
-import Loader from './Loader/Loader';
-import Modal from './Modal/Modal';
-import { fetchByName, pagination } from '../services/pixabay-api';
-import ImageGallery from './ImageGallery/ImageGallery';
-import Button from './Button/Button';
+import { ImageGallery } from './ImageGallery/ImageGallery';
+import { Button } from 'components/Button/Button';
+import { Loader } from 'components/Loader/Loader';
+
+import { AppContent } from './App.module';
+
+const postApiService = new PostsApiService();
 
 export class App extends Component {
   state = {
-    foundImages: null,
-    searchItem: '',
-    showModal: false,
-    showLoader: false,
-    nextPage: 1,
-    largerImage: null,
-    alt: null,
-    error: null,
-    status: 'idle',
-    showButton: true,
-    total: 0,
+    searchQuery: ``,
+    galleryItems: [],
+    galleryPage: 1,
+
+    loading: false,
+    isButtonShow: false,
+    error: true,
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevSearch = prevState.searchItem;
-    const nextSearch = this.state.searchItem;
+  componentDidUpdate(_, prevState) {
+    const prevQuery = prevState.searchQuery;
+    const nextQuery = this.state.searchQuery;
+    const prevPage = prevState.galleryPage;
+    const nextPage = this.state.galleryPage;
 
-    if (prevSearch !== nextSearch) {
-      this.setState({ status: 'pending', nextPage: 2 });
-
-      fetchByName(nextSearch)
-        .then(foundImages => {
-          if (foundImages.total !== 0) {
-            this.setState({
-              foundImages: foundImages.hits,
-              status: 'resolved',
-              error: null,
-              total: foundImages.total,
-              showButton: true,
-            });
-          } else {
-            this.setState({
-              status: 'rejected',
-              error: new Error(`Cannot find photos for ${nextSearch} category`),
-            });
-          }
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+    if (prevQuery !== nextQuery) {
+      this.setState({ galleryPage: 1, galleryItems: [], isButtonShow: false });
+      if (nextPage === 1) {
+        this.fetchGalleryItems(nextQuery, nextPage);
+      }
+    } else if (prevPage !== nextPage) {
+      this.fetchGalleryItems(nextQuery, nextPage);
     }
   }
 
+  fetchGalleryItems = (nextQuery, nextPage) => {
+    this.setState({ loading: true, error: false });
 
-  setSearchItem = data => {
-    this.setState({ searchItem: data });
-  };
+    postApiService.query = nextQuery;
+    postApiService.page = nextPage;
 
-  toggleModal = () => {
-    const { showModal } = this.state;
-    this.setState({ showModal: !showModal });
-  };
+    postApiService.fetchPost().then(data => {
+      postApiService.hits = data.totalHits;
 
-  modalImage = ({ alt, largerImage }) => {
-    this.setState({
-      largerImage: largerImage,
-      alt: alt,
+      const newData = data.hits.map(
+        ({ id, tags, webformatURL, largeImageURL }) => ({
+          id,
+          tags,
+          webformatURL,
+          largeImageURL,
+        })
+      );
+      const currentData = [...this.state.galleryItems, ...newData];
+
+      this.setState(prevState => ({
+        galleryItems: [...prevState.galleryItems, ...newData],
+      }));
+
+      if (!data.totalHits) {
+        this.setState({ loading: false, error: true });
+        return toast.warn(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+      }
+
+      if (currentData.length >= data.totalHits) {
+        this.setState({
+          loading: false,
+          isButtonShow: false,
+          error: false,
+        });
+        return;
+      }
+
+      if (nextPage === 1) {
+        toast.success(`Hooray! We found ${postApiService.hits} images.`);
+      }
+
+      this.setState({
+        loading: false,
+        isButtonShow: true,
+        error: false,
+      });
     });
   };
 
-  onLoadMore = () => {
-    const { searchItem, nextPage } = this.state;
+  handleFormSubmit = searchQuery => {
+    this.setState({ searchQuery });
+  };
 
-    pagination(searchItem, nextPage)
-      .then(newImages => {
-        this.setState(({ foundImages, nextPage }) => ({
-          foundImages: [...foundImages, ...newImages.hits],
-          status: 'resolved',
-          nextPage: nextPage + 1,
-        }));
-        if (this.state.foundImages.length + 12 >= this.state.total) {
-          this.setState({ showButton: false });
-        }
-      })
-      .catch(error => this.setState({ error, status: 'rejected' }));
+  onLoadMore = () => {
+    this.setState(prevState => ({
+      galleryPage: prevState.galleryPage + 1,
+    }));
   };
 
   render() {
-    const { showModal, foundImages, largerImage, alt, error, status, showButton } =
-      this.state;
+    const { galleryItems, loading, isButtonShow, error } = this.state;
+
     return (
-      <div className={css.app}>
-        <Searchbar onSubmit={this.setSearchItem} />
-        {status === 'pending' && <Loader />}
-        {status === 'resolved' && (
-          <ImageGallery
-            images={foundImages}
-            openModal={this.toggleModal}
-            modalImage={this.modalImage}
-          />
-        )}
-        {status === 'rejected' && (
-          <div className={css.error}>
-            <h1>{error.message}</h1>
-          </div>
-        )}
-        {status === 'resolved' && showButton && <Button onClick={this.onLoadMore} />}
-        {showModal && (
-          <Modal
-            onClose={this.toggleModal}
-            children={<img src={largerImage} alt={alt} />}
-          />
-        )}
-      </div>
+      <AppContent>
+        <Searchbar onSubmit={this.handleFormSubmit} />
+
+        {error && <h2>Please, enter search word!</h2>}
+        {!error && <ImageGallery galleryItems={galleryItems} />}
+        {loading && <Loader />}
+        {isButtonShow && <Button onClick={this.onLoadMore} />}
+
+        {/* Additions  */}
+        <ToastContainer autoClose={3000} theme="dark" />
+      </AppContent>
     );
   }
 }
