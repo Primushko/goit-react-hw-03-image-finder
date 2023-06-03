@@ -17,7 +17,7 @@ export const ButtonLoad = styled.button`
 
   :hover,
   :focus {
-    background: #286053;
+    background: #2826c9;
   }
 
   // padding: 8px 16px;

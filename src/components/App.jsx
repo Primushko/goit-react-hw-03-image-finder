@@ -109,7 +109,7 @@ export class App extends Component {
       <AppContent>
         <Searchbar onSubmit={this.handleFormSubmit} />
 
-        {error && <h2>Please, enter search word!</h2>}
+        {/* {error && <h2>enter search word!</h2>} */}
         {!error && <ImageGallery galleryItems={galleryItems} />}
         {loading && <Loader />}
         {isButtonShow && <Button onClick={this.onLoadMore} />}
