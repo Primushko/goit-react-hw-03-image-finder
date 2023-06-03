@@ -1,15 +1,12 @@
 import { Component } from 'react';
-
+// бібліотеку react-toastify для стилізації та відображення спливаючих повідомлень.
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import PostsApiService from 'services/PostApiService';
-
 import Searchbar from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from 'components/Button/Button';
 import { Loader } from 'components/Loader/Loader';
-
 import { AppContent } from './App.module';
 
 const postApiService = new PostsApiService();
@@ -26,11 +23,14 @@ export class App extends Component {
   };
 
   componentDidUpdate(_, prevState) {
+    // Метод `componentDidUpdate`, який викликається після оновлення компонента і порівнює попередній
+    // стан з поточним станом. Він виконує дії залежно від змін у searchQuery та galleryPage.
     const prevQuery = prevState.searchQuery;
     const nextQuery = this.state.searchQuery;
     const prevPage = prevState.galleryPage;
     const nextPage = this.state.galleryPage;
-
+    // Якщо змінився пошуковий запит, він скидає `galleryPage` на 1 і очищує galleryItems
+    // Якщо `galleryPage` залишається 1, він викликає `fetchGalleryItems` для отримання нових елементів галереї.
     if (prevQuery !== nextQuery) {
       this.setState({ galleryPage: 1, galleryItems: [], isButtonShow: false });
       if (nextPage === 1) {
@@ -42,6 +42,8 @@ export class App extends Component {
   }
 
   fetchGalleryItems = (nextQuery, nextPage) => {
+    // виконує запит до API для отримання елементів галереї з вказаним запитом та сторінкою.
+    // Він також оновлює стан компонента залежно від результатів запиту.
     this.setState({ loading: true, error: false });
 
     postApiService.query = nextQuery;
@@ -93,30 +95,38 @@ export class App extends Component {
   };
 
   handleFormSubmit = searchQuery => {
+    // викликається при відправці форми пошуку і оновлює `searchQuery` у стані компонента.
     this.setState({ searchQuery });
   };
 
   onLoadMore = () => {
+    // викликається при натисканні на кнопку "Load More" і збільшує значення `galleryPage` у стані компонента.
     this.setState(prevState => ({
       galleryPage: prevState.galleryPage + 1,
     }));
   };
 
   render() {
+    // рендерить компонент і його дочірні елементи, включаючи пошукову панель,
+    // галерею зображень, індикатор завантаження та кнопку "Load More".
     const { galleryItems, loading, isButtonShow, error } = this.state;
 
     return (
       <AppContent>
         <Searchbar onSubmit={this.handleFormSubmit} />
-
-        {/* {error && <h2>enter search word!</h2>} */}
+        {/* відображає компонент `Searchbar` і передає йому функцію `handleFormSubmit` як властивість `onSubmit`. */}
         {!error && <ImageGallery galleryItems={galleryItems} />}
+        {/* відображає компонент `ImageGallery` лише в тому випадку, якщо `error` дорівнює `false`.  */}
         {loading && <Loader />}
+        {/*  відображає компонент `Loader` лише тоді, коли `loading` дорівнює `true` */}
         {isButtonShow && <Button onClick={this.onLoadMore} />}
-
-        {/* Additions  */}
+        {/*  відображає компонент `Button` лише тоді, коли `isButtonShow` дорівнює `true`. */}
         <ToastContainer autoClose={3000} theme="dark" />
       </AppContent>
+      // компонент ToastContainer використовується для відображення спливаючих повідомлень з
+      // допомогою бібліотеки `react-toastify`
+      // використовується темна тема (theme="dark"), і кожен
+      // тост автоматично закривається після 3 секунд (autoClose={3000}).
     );
   }
 }
