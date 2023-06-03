@@ -1,5 +1,4 @@
 import { Component } from 'react';
-
 import { Overlay, ModalContent } from './Modal.module';
 
 export class Modal extends Component {
@@ -25,7 +24,6 @@ export class Modal extends Component {
 
   render() {
     const { largeImageURL, alt } = this.props;
-
     return (
       <Overlay className="overlay" onClick={this.handleBackdropClick}>
         <ModalContent className="modal">
