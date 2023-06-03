@@ -6,6 +6,7 @@ import css from './Modal.module.css'; // стилізація
 const modalRoot = document.querySelector('#modal-root');
 
 export class Modal extends Component {
+
   // реєструє обробник події keydown на вікні браузера
   componentDidMount() {
     window.addEventListener('keydown', this.keyDown); // при натисканні клавіші Escape викликає функцію keyDown
@@ -23,20 +24,19 @@ export class Modal extends Component {
   }
 
   // закриття модалки по кліку на бекдроп
-  handleClose = evt => {
+  handleClose = (evt) => {
+
     // перевірка чи клік був по бекдропу
     if (evt.currentTarget === evt.target) {
       this.props.closeModal(); // закриття модалки
     }
-  };
+  }
 
   render() {
-    return createPortal(
-      <div onClick={this.handleClose} className={css.Overlay}>
-        <div className={css.Modal}>{this.props.children}</div>{' '}
-        {/* рендеринг дочірніх елементів */}
-      </div>,
-      modalRoot
-    );
+    return createPortal(<div onClick={this.handleClose} className={css.Overlay}>
+      <div className={css.Modal}>{this.props.children}</div> {/* рендеринг дочірніх елементів */}
+    </div>, modalRoot)
   }
 }
+
+// Діма Берестень

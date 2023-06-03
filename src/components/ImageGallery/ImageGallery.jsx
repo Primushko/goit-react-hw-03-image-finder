@@ -16,5 +16,7 @@ export const ImageGallery = ({ images, togleModal }) => {
 // типизація пропсів
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(PropTypes.object).isRequired, // масив об'єктів
-  togleModal: PropTypes.func.isRequired, // функція
+  togleModal: PropTypes.func.isRequired // функція
 };
+
+// Діма Берестень

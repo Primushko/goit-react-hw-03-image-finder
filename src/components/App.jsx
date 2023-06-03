@@ -1,10 +1,10 @@
 import { Component } from 'react';
-import { getSearch } from 'api/getSearsh';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast'; // спливаючі повідомлення
 import { ImageGallery } from './ImageGallery/ImageGallery';
-import { Searchbar } from './Searchbar/Searchbar';
+import { getSearch } from 'api/getSearch'; // отримання даних пошуку
+import { Searchbar } from './Searchbar/Searchbar'; // рядок пошуку
 import { Button } from 'components/Button/Button';
-import { Loader } from 'components/Loader/Loader';
+import { Loader } from 'components/Loader/Loader'; // індикатор завантаження
 import { Modal } from './Modal/Modal';
 
 export class App extends Component {
@@ -22,6 +22,7 @@ export class App extends Component {
   // Викликається після того, як компонент був змонтований.
   // Параметр '_' містить попередні пропи компонента, а PrevState - попередній стан компонента.
   componentDidUpdate(_, PrevState) {
+
     // Перевіряємо, чи змінились пропи search або page.
     if (
       PrevState.search !== this.state.search ||
@@ -38,6 +39,7 @@ export class App extends Component {
     getSearch(text, page)
       .then(resp => resp.json()) // перетворюємо в JSON
       .then(data => {
+
         // Перевіряємо, чи є результати пошуку порожніми.
         if (data.hits.length === 0) {
           this.setState({ empty: true }); // вмикаємо флаг, який показує, чи є результати пошуку порожніми
@@ -65,6 +67,7 @@ export class App extends Component {
 
   // Функція, яка викликається при натисканні на картинку.
   openModal = (largeImageURL, alt) => {
+
     // Використовуємо setState з функцією, яка приймає попередній стан і повертає новий.
     this.setState(({ showModal }) => {
       return { showModal: !showModal, largeImageURL, alt };
@@ -88,6 +91,7 @@ export class App extends Component {
 
   // Функція, яка викликається при натисканні на кнопку "Close".
   closeModal = () => {
+
     // Використовуємо setState з функцією, яка приймає попередній стан і повертає новий.
     this.setState(({ showModal }) => {
       return { showModal: !showModal };
@@ -98,6 +102,7 @@ export class App extends Component {
     const { error, loading, images, total, page } = this.state;
     return (
       <div>
+
         {/* Спливаюче повідомлення */}
         <Toaster
           toastOptions={{
@@ -142,19 +147,4 @@ export class App extends Component {
   }
 }
 
-// export const App = () => {
-//   return (
-//     <div
-//       style={{
-//         height: '100vh',
-//         display: 'flex',
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         fontSize: 40,
-//         color: '#010101',
-//       }}
-//     >
-//       React homework template
-//     </div>
-//   );
-// };
+// Діма Берестень
