@@ -1,150 +1,116 @@
 import { Component } from 'react';
-import { Toaster } from 'react-hot-toast'; // спливаючі повідомлення
-import { ImageGallery } from './ImageGallery/ImageGallery';
-import { getSearch } from 'api/getSearch'; // отримання даних пошуку
-import { Searchbar } from './Searchbar/Searchbar'; // рядок пошуку
-import { Button } from 'components/Button/Button';
-import { Loader } from 'components/Loader/Loader'; // індикатор завантаження
-import { Modal } from './Modal/Modal';
+import css from './App.module.css';
+import Searchbar from './Searchbar/Searchbar';
+import Loader from './Loader/Loader';
+import Modal from './Modal/Modal';
+import { fetchByName, pagination } from '../services/pixabay-api';
+import ImageGallery from './ImageGallery/ImageGallery';
+import Button from './Button/Button';
 
 export class App extends Component {
   state = {
-    search: '',
-    images: [],
-    page: 1,
-    total: 1,
-    loading: false, // флаг, який показує, чи відбувається завантаження
-    error: null,
+    foundImages: null,
+    searchItem: '',
     showModal: false,
-    empty: false, // флаг, який показує, чи є результати пошуку порожніми
+    showLoader: false,
+    nextPage: 1,
+    largerImage: null,
+    alt: null,
+    error: null,
+    status: 'idle',
+    showButton: true,
+    total: 0,
   };
 
-  // Викликається після того, як компонент був змонтований.
-  // Параметр '_' містить попередні пропи компонента, а PrevState - попередній стан компонента.
-  componentDidUpdate(_, PrevState) {
+  componentDidUpdate(prevProps, prevState) {
+    const prevSearch = prevState.searchItem;
+    const nextSearch = this.state.searchItem;
 
-    // Перевіряємо, чи змінились пропи search або page.
-    if (
-      PrevState.search !== this.state.search ||
-      PrevState.page !== this.state.page
-    ) {
-      this.getFunc(this.state.search, this.state.page);
+    if (prevSearch !== nextSearch) {
+      this.setState({ status: 'pending', nextPage: 2 });
+
+      fetchByName(nextSearch)
+        .then(foundImages => {
+          if (foundImages.total !== 0) {
+            this.setState({
+              foundImages: foundImages.hits,
+              status: 'resolved',
+              error: null,
+              total: foundImages.total,
+              showButton: true,
+            });
+          } else {
+            this.setState({
+              status: 'rejected',
+              error: new Error(`Cannot find photos for ${nextSearch} category`),
+            });
+          }
+        })
+        .catch(error => this.setState({ error, status: 'rejected' }));
     }
   }
 
-  getFunc = (text, page) => {
-    this.setState({ loading: true }); // вмикаємо індикатор завантаження
 
-    // Викликаємо функцію getSearch, яка виконує запит на сервер.
-    getSearch(text, page)
-      .then(resp => resp.json()) // перетворюємо в JSON
-      .then(data => {
-
-        // Перевіряємо, чи є результати пошуку порожніми.
-        if (data.hits.length === 0) {
-          this.setState({ empty: true }); // вмикаємо флаг, який показує, чи є результати пошуку порожніми
-        }
-        this.setState(prevSt => ({
-          page: prevSt.page,
-          images: [...prevSt.images, ...data.hits], // додаємо нові картинки до масиву
-          total: data.total,
-        }));
-      })
-      .catch(error => {
-        this.setState({ error: error.message }); // записуємо помилку в стейт
-      })
-      .finally(() => {
-        this.setState({ loading: false }); // вимикаємо індикатор завантаження
-      });
+  setSearchItem = data => {
+    this.setState({ searchItem: data });
   };
 
-  // Функція, яка викликається при натисканні кнопки "Load more".
-  clickLoad = () => {
-    this.setState(prevSt => ({
-      page: prevSt.page + 1, // збільшуємо номер сторінки на +1
-    }));
+  toggleModal = () => {
+    const { showModal } = this.state;
+    this.setState({ showModal: !showModal });
   };
 
-  // Функція, яка викликається при натисканні на картинку.
-  openModal = (largeImageURL, alt) => {
-
-    // Використовуємо setState з функцією, яка приймає попередній стан і повертає новий.
-    this.setState(({ showModal }) => {
-      return { showModal: !showModal, largeImageURL, alt };
-    });
-  };
-
-  // Функція, яка викликається при натисканні на кнопку "Search".
-  handleSubmit = search => {
-    // Очищаємо масив з картинками, а також ставимо початкові значення для сторінки,
-    // загальної кількості картинок, флагів і помилок.
+  modalImage = ({ alt, largerImage }) => {
     this.setState({
-      search,
-      images: [],
-      page: 1,
-      total: 1,
-      loading: false,
-      error: null,
-      empty: false,
+      largerImage: largerImage,
+      alt: alt,
     });
   };
 
-  // Функція, яка викликається при натисканні на кнопку "Close".
-  closeModal = () => {
+  onLoadMore = () => {
+    const { searchItem, nextPage } = this.state;
 
-    // Використовуємо setState з функцією, яка приймає попередній стан і повертає новий.
-    this.setState(({ showModal }) => {
-      return { showModal: !showModal };
-    });
+    pagination(searchItem, nextPage)
+      .then(newImages => {
+        this.setState(({ foundImages, nextPage }) => ({
+          foundImages: [...foundImages, ...newImages.hits],
+          status: 'resolved',
+          nextPage: nextPage + 1,
+        }));
+        if (this.state.foundImages.length + 12 >= this.state.total) {
+          this.setState({ showButton: false });
+        }
+      })
+      .catch(error => this.setState({ error, status: 'rejected' }));
   };
 
   render() {
-    const { error, loading, images, total, page } = this.state;
+    const { showModal, foundImages, largerImage, alt, error, status, showButton } =
+      this.state;
     return (
-      <div>
-
-        {/* Спливаюче повідомлення */}
-        <Toaster
-          toastOptions={{
-            duration: 1500,
-          }}
-        />
-
-        {/*текстове поле для введення запиту */}
-        <Searchbar handleSubmit={this.handleSubmit} />
-
-        {/* Перевіряємо, чи є помилка */}
-        {error && (
-          <h2 style={{ textAlign: 'center' }}>
-            Something went wrong: ({error})!
-          </h2>
+      <div className={css.app}>
+        <Searchbar onSubmit={this.setSearchItem} />
+        {status === 'pending' && <Loader />}
+        {status === 'resolved' && (
+          <ImageGallery
+            images={foundImages}
+            openModal={this.toggleModal}
+            modalImage={this.modalImage}
+          />
         )}
-
-        {/* відображення списку зображень */}
-        <ImageGallery togleModal={this.openModal} images={images} />
-
-        {/* Перевіряємо, чи відбувається завантаження */}
-        {loading && <Loader />}
-
-        {/* Перевіряємо, чи є результати пошуку порожніми */}
-        {this.state.empty && (
-          <h2 style={{ textAlign: 'center' }}>
-            Sorry. There are no images ... 😭
-          </h2>
+        {status === 'rejected' && (
+          <div className={css.error}>
+            <h1>{error.message}</h1>
+          </div>
         )}
-
-        {/* Перевіряємо, чи потрібно відображати кнопку "Load more" */}
-        {total / 12 > page && <Button clickLoad={this.clickLoad} />}
-
-        {/* Перевіряємо, чи потрібно відображати модальне вікно */}
-        {this.state.showModal && (
-          <Modal closeModal={this.closeModal}>
-            <img src={this.state.largeImageURL} alt={this.state.alt} />
-          </Modal>
+        {status === 'resolved' && showButton && <Button onClick={this.onLoadMore} />}
+        {showModal && (
+          <Modal
+            onClose={this.toggleModal}
+            children={<img src={largerImage} alt={alt} />}
+          />
         )}
       </div>
     );
   }
 }
-
-// Діма Берестень

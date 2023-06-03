@@ -1,22 +1,46 @@
-import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem'; // елемент галереї
-import PropTypes from 'prop-types'; // типизація пропсів
-import css from './ImageGallery.module.css'; // імпортуємо стилі
+import { Component } from 'react';
+import ImageGalleyItem from 'components/ImageGalleryItem/ImageGalleyItem';
+import css from './ImageGallery.module.css';
+import PropTypes from 'prop-types'
 
-// Функціональний компонент, який відповідає за галерею.
-export const ImageGallery = ({ images, togleModal }) => {
-  return (
-    <>
-      <ul className={css.gallery}>
-        <ImageGalleryItem togleModal={togleModal} images={images} />
+
+
+export default class ImageGallery extends Component {
+  state = {
+    gallery: [],
+  };
+
+  onClick = ({ largerImage, alt }) => {
+    this.props.modalImage({
+      largerImage: largerImage,
+      alt: alt,
+    });
+    this.props.openModal();
+  };
+
+  render() {
+    const { images } = this.props;
+
+    return (
+      <ul className={css.ImageGallery}>
+        {images.map(image => {
+          return (
+            <ImageGalleyItem
+              onClick={this.onClick}
+              key={image.id}
+              src={image.webformatURL}
+              alt={image.tags}
+              largerImage={image.largeImageURL}
+            />
+          );
+        })}
       </ul>
-    </>
-  );
-};
+    );
+  }
+}
 
-// типизація пропсів
 ImageGallery.propTypes = {
-  images: PropTypes.arrayOf(PropTypes.object).isRequired, // масив об'єктів
-  togleModal: PropTypes.func.isRequired // функція
+  images: PropTypes.array.isRequired,
+  openModal: PropTypes.func.isRequired,
+  modalImage: PropTypes.func.isRequired,
 };
-
-// Діма Берестень

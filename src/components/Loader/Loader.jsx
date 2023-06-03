@@ -1,21 +1,40 @@
-import { ColorRing } from 'react-loader-spinner'; // анімований спінер з бібліотеки 
+import { Oval } from 'react-loader-spinner';
+import css from './Loader.module.css'
+import PropTypes from 'prop-types';
 
-// використовується в компонентах, де потрібно показати що дані завантажуються
-export const Loader = () => {
-    return (
-      <ColorRing
-        visible={true}
-        height="80"
-        width="80"
-        ariaLabel="blocks-loading"
-        wrapperStyle={{
-          display: 'block',
-          marginTop: 20,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}
-        wrapperClass="blocks-wrapper"
-        colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
-      />
-    );
-}
+const Loader = () => {
+  return (
+    <div className={css.loader}>
+      {
+        <Oval
+          height={120}
+          width={120}
+          color="grey"
+          wrapperStyle={{}}
+          wrapperClass=""
+          visible={true}
+          ariaLabel="oval-loading"
+          secondaryColor="grey"
+          strokeWidth={2}
+          strokeWidthSecondary={2}
+        />
+      }
+    </div>
+  );
+};
+export default Loader;
+
+Oval.propTypes = {
+  ariaLabel: PropTypes.string.isRequired,
+  secondaryColor: PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired,
+  wrapperClass: PropTypes.string.isRequired,
+  height: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
+  strokeWidth: PropTypes.number.isRequired,
+  strokeWidthSecondary: PropTypes.number.isRequired,
+  visible: PropTypes.bool.isRequired,
+  wrapperStyle: PropTypes.object.isRequired,
+};
+
+

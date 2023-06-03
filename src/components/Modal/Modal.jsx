@@ -1,42 +1,40 @@
-import { Component } from 'react'; // для класового компонента
-import { createPortal } from 'react-dom'; // для рендеринга в іншому місці
-import css from './Modal.module.css'; // стилізація
+import { PureComponent } from 'react';
+import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
+import css from './Modal.module.css';
 
-// Пошук модалки щоб динамічно додати до DOM-дерева сторінки
-const modalRoot = document.querySelector('#modal-root');
+export default class Modal extends PureComponent {
+  modalRoot = document.querySelector('#modal-root');
 
-export class Modal extends Component {
-
-  // реєструє обробник події keydown на вікні браузера
   componentDidMount() {
-    window.addEventListener('keydown', this.keyDown); // при натисканні клавіші Escape викликає функцію keyDown
+    window.addEventListener('keydown', this.closeOnEsc);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.closeOnEsc);
   }
 
-  keyDown = evt => {
-    // перевірка коду клавіші
-    if (evt.code === 'Escape') {
-      this.props.closeModal(); // закриття модалки
+  closeOnEsc = e => {
+    if (e.code === 'Escape') {
+      this.props.onClose();
+    }
+  };
+  onClickClose = e => {
+    if (e.currentTarget === e.target) {
+      this.props.onClose();
     }
   };
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.keyDown); // видаляє обробник події keydown з вікна браузера
-  }
-
-  // закриття модалки по кліку на бекдроп
-  handleClose = (evt) => {
-
-    // перевірка чи клік був по бекдропу
-    if (evt.currentTarget === evt.target) {
-      this.props.closeModal(); // закриття модалки
-    }
-  }
-
   render() {
-    return createPortal(<div onClick={this.handleClose} className={css.Overlay}>
-      <div className={css.Modal}>{this.props.children}</div> {/* рендеринг дочірніх елементів */}
-    </div>, modalRoot)
+    return createPortal(
+      <div className={css.Overlay} onClick={this.onClickClose}>
+        <div className={css.Modal}>{this.props.children}</div>
+      </div>,
+      this.modalRoot
+    );
   }
 }
 
-// Діма Берестень
+Modal.propTypes = {
+  children: PropTypes.node.isRequired,
+  onClose: PropTypes.func.isRequired,
+};

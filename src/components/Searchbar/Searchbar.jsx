@@ -1,61 +1,39 @@
-import { Component } from "react";
-import { toast } from "react-hot-toast"; // для показу повідомлень
-import { BiSearch } from 'react-icons/bi'; // іконка пошуку
-import css from './Searchbar.module.css' // стилізація
+import { Component } from 'react';
+import css from './Searchbar.module.css';
+import PropTypes from 'prop-types';
 
-// Компонент пошуку
-export class Searchbar extends Component {
+export default class Searchbar extends Component {
   state = {
-    search: '',
+    itemToSearch: '',
   };
-
-  // функція для зміни стану
-    onChangeInput = (evt) => {
-        const { name, value } = evt.currentTarget; // деструктуризація об'єкта
-        this.setState({ [name]: value }); // зміна стану по ключу name
-  }
-
-  // функція для очищення поля вводу
-    resetForm = () => {
-     this.setState({ search: '' });
-    }
+  onSubmit = e => {
+    e.preventDefault();
+    this.props.onSubmit(this.state.itemToSearch);
+  };
+  onChange = e => {
+    this.setState({ itemToSearch: e.target.value });
+  };
+  reset = () => {
+    this.setState({ itemToSearch: '' });
+  };
 
   render() {
     return (
-      <header className={css.searchbar}>
-        <form
-
-          // функція для відправки запиту
-          onSubmit={evt => {
-                    evt.preventDefault(); // відміна стандартної поведінки браузера
-
-                    // перевірка на пустий запит
-                    if (!this.state.search) {
-                      return toast.error('Enter text for search.'); // повідомлення про помилку
-                    }
-
-            // виклик функції з App.jsx для відправки запиту
-            this.props.handleSubmit(this.state.search);
-            this.resetForm();
-          }}
-          className={css.Form}
-        >
-
-          {/* іконка пошуку */}
-          <button type="submit" className={css.Button}>
-            <BiSearch size="20" />
+      <header className={css.Searchbar}>
+        <form className={css.SearchForm} onSubmit={this.onSubmit}>
+          <button type="submit" className={css.SearchFormButton}>
+            <span className={css.SearchFormButtonLabel}>Search</span>
           </button>
 
-          {/* поле вводу */}
           <input
-            value={this.state.search}
-            onChange={this.onChangeInput} // виклик функції для зміни стану
-            className={css.Input}
-            name="search"
+            onChange={this.onChange}
+            onClick={this.reset}
+            className={css.SearchFormInput}
             type="text"
             autoComplete="off"
-            autoFocus // автофокус на полі вводу
+            autoFocus
             placeholder="Search images and photos"
+            value={this.state.itemToSearch}
           />
         </form>
       </header>
@@ -63,4 +41,6 @@ export class Searchbar extends Component {
   }
 }
 
-// Діма Берестень
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
