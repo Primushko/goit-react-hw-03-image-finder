@@ -6,12 +6,12 @@ export const GalleryItem = styled.li`
 
   max-width: 400px;
 
-  padding: 12px;
+  padding: 6px;
 
-  border-radius: 25px;
+  border-radius: 10px;
 
-  background: #30444e;
-  border: 1px solid #30444e;
+  background: #7676d8;
+  border: 1px solid #2f45d3;
 
   transition: box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1);
   transition: border 250ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -28,7 +28,7 @@ export const GalleryImg = styled.img`
   object-fit: cover;
   transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  border-radius: 12px;
+  border-radius: 5px;
 
   :hover {
     cursor: zoom-in;

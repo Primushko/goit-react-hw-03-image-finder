@@ -31,12 +31,13 @@ export const Button = styled.button`
   text-align: center;
   color: #ffffff;
   border-radius: 12px;
-  background: linear-gradient(180deg, #40df9f 0%, #3ed598 100%);
-  box-shadow: 0px 2px 4px rgba(15, 218, 137, 0.3);
+  background: linear-gradient(260deg, #4840df 0%, #2f439f 100%);
+  box-shadow: 0px 2px 4px rgb(165, 196, 243, 0.3);
+
   transition: background 250ms cubic-bezier(0.4, 0, 0.2, 1);
   :hover,
   :focus {
-    background: #2fa186;
+    background: #2f4aa1;
   }
 `;
 export const Input = styled.input`
@@ -44,5 +45,5 @@ export const Input = styled.input`
   width: 400px;
   height: 48px;
   border-radius: 12px;
-  background: #fafa5c;
+  background: rgb(165, 196, 243);
 `;
