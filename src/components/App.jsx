@@ -16,7 +16,6 @@ export class App extends Component {
     searchQuery: ``,
     galleryItems: [],
     galleryPage: 1,
-
     loading: false,
     isButtonShow: false,
     error: true,
